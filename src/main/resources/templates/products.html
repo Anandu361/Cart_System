@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Products</title>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<h2>Products List</h2>
+
+<div class="row mb-3">
+  <div class="col-md-4">
+    <select id="sortSelect" class="form-select" onchange="sortProducts()">
+      <option value="">Sort By</option>
+      <option value="name">Name</option>
+      <option value="price">Price</option>
+    </select>
+  </div>
+</div>
+<table class="table table-bordered table-striped table-hover">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Price</th>
+            <th>Quantity</th>
+        </tr>
+    </thead>
+    <tbody id="productTableBody"></tbody>
+</table>
+<div class="d-flex justify-content-center align-items-center gap-3 mt-3">
+  <button class="btn btn-outline-primary" onclick="prevPage()">Previous</button>
+  <span class="fw-bold">Page <span id="pageNumber">1</span></span>
+  <button class="btn btn-outline-primary" onclick="nextPage()">Next</button>
+</div>
+
+
+<script>
+/* ✅ JWT CHECK */
+const token = localStorage.getItem("token");
+if (!token) {
+    window.location.href = "/login";
+}
+
+/* ✅ GLOBAL VARIABLES */
+let allProducts = [];
+let currentPage = 1;
+const pageSize = 5;
+
+/* ✅ FETCH ALL PRODUCTS */
+fetch("/api/test/products/all", {
+    headers: {
+        "Authorization": "Bearer " + token
+    }
+})
+.then(res => {
+    if (!res.ok) {
+        throw new Error("Unauthorized");
+    }
+    return res.json();
+})
+.then(data => {
+    allProducts = data;
+    renderTable();
+})
+.catch(err => {
+    alert("Login expired. Please login again.");
+    localStorage.removeItem("token");
+    window.location.href = "/login";
+});
+
+/* ✅ RENDER TABLE WITH PAGINATION */
+function renderTable() {
+    const tbody = document.getElementById("productTableBody");
+    tbody.innerHTML = "";
+
+    const start = (currentPage - 1) * pageSize;
+    const end = start + pageSize;
+    const pageData = allProducts.slice(start, end);
+
+    pageData.forEach((p, index) => {
+        const row = `
+            <tr>
+                <td>${start + index + 1}</td>
+                <td>${p.name}</td>
+                <td>${p.price}</td>
+                <td>${p.quantity}</td>
+                <td>
+                    <button class="btn btn-sm btn-warning me-1" onclick="editProduct(${p.id})">Edit</button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteProduct(${p.id})">Delete</button>
+                </td>
+            </tr>
+        `;
+        tbody.innerHTML += row;
+    });
+
+    document.getElementById("pageNumber").innerText = currentPage;
+}
+
+/* ✅ PAGINATION CONTROLS */
+function nextPage() {
+    if ((currentPage * pageSize) < allProducts.length) {
+        currentPage++;
+        renderTable();
+    }
+}
+
+function prevPage() {
+    if (currentPage > 1) {
+        currentPage--;
+        renderTable();
+    }
+}
+
+/* ✅ SORTING */
+function sortProducts() {
+    const sortType = document.getElementById("sortSelect").value;
+
+    if (sortType === "name") {
+        allProducts.sort((a, b) => a.name.localeCompare(b.name));
+    } 
+    else if (sortType === "price") {
+        allProducts.sort((a, b) => a.price - b.price);
+    }
+
+    currentPage = 1;
+    renderTable();
+}
+
+/* ✅ DELETE PRODUCT */
+function deleteProduct(id) {
+    fetch(`/api/test/products/delete/${id}`, {
+        method: "DELETE",
+        headers: {
+            "Authorization": "Bearer " + token
+        }
+    })
+    .then(() => {
+        alert("Product deleted");
+        window.location.reload();
+    });
+}
+
+/* ✅ EDIT PRODUCT */
+function editProduct(id) {
+    window.location.href = `/edit-product?id=${id}`;
+}
+</script>
+
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+
+</body>
+</html>

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Edit Product</title>
+	</head>
+	<body>
+		<h2>Edit Product</h2>
+
+		<form id="editForm">
+		  <input type="hidden" id="id">
+
+		  Name: <input type="text" id="name"><br><br>
+		  Price: <input type="number" id="price"><br><br>
+		  Quantity: <input type="number" id="quantity"><br><br>
+
+		  <button type="submit">Update</button>
+		</form>
+
+		<script>
+		const params = new URLSearchParams(window.location.search);
+		const id = params.get("id");
+		const token = localStorage.getItem("token");
+
+		if (!token) {
+		  alert("Not logged in");
+		  window.location.href = "/login";
+		}
+
+		// ✅ Load product
+		fetch(`/api/test/products/${id}`, {
+		  headers: { "Authorization": "Bearer " + token }
+		})
+		.then(res => {
+		  if (!res.ok) throw new Error("Fetch failed");
+		  return res.json();
+		})
+		.then(p => {
+		  document.getElementById("id").value = p.id;
+		  document.getElementById("name").value = p.name;
+		  document.getElementById("price").value = p.price;
+		  document.getElementById("quantity").value = p.quantity;
+		});
+
+		// ✅ Update product (FIXED)
+		document.getElementById("editForm").addEventListener("submit", e => {
+		  e.preventDefault();
+
+		  const nameVal = document.getElementById("name").value;
+		  const priceVal = document.getElementById("price").value;
+		  const quantityVal = document.getElementById("quantity").value;
+
+		  fetch(`/api/test/products/update/${id}`, {
+		    method: "PUT",
+		    headers: {
+		      "Content-Type": "application/json",
+		      "Authorization": "Bearer " + token
+		    },
+		    body: JSON.stringify({
+		      name: nameVal,
+		      price: priceVal,
+		      quantity: quantityVal
+		    })
+		  })
+		  .then(res => {
+		    if (!res.ok) throw new Error("Update failed");
+		    return res.json();
+		  })
+		  .then(() => {
+		    alert("Product updated");
+		    window.location.href = "/products";
+		  })
+		  .catch(() => {
+		    alert("Session expired or update failed");
+		    localStorage.removeItem("token");
+		    window.location.href = "/login";
+		  });
+		});
+		</script>
+
+
+	</body>
+</html>

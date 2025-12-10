@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Home</title>
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+	</head>
+	<body>
+		<h1>Cart System</h1>
+		<div th:replace="~{fragments/navbar :: navbar}"></div>
+		<h3 id="usernameText"></h3>
+		<h3>Welcome to Cart Dashboard</h3>
+
+		<p>Total Products: <span id="count">0</span></p>
+		<p>Total Price: ₹<span id="total">0</span></p>
+
+		
+		
+		<br>
+		<button onclick="downloadPdf()">Download PDF</button>
+		
+		<button onclick="sendEmail()">Send Report to Email</button>
+
+
+
+		<script>
+		
+		const token = localStorage.getItem("token");
+
+		if (!localStorage.getItem("token")) {
+				    window.location.href = "/login";
+		}	
+		
+		const payload = JSON.parse(atob(token.split(".")[1]));
+		const username = payload.sub;
+		document.getElementById("usernameText").innerText = `Hi ${username}`;
+		function loadSummary() {
+
+		    fetch("/api/test/products/summary", {
+		        headers: {
+		            "Authorization": "Bearer " + token
+		        }
+		    })
+		    .then(res => {
+		        if (!res.ok) {
+		            throw new Error("Unauthorized");
+		        }
+		        return res.json();
+		    })
+		    .then(data => {
+		        document.getElementById("count").innerText = data.count;
+		        document.getElementById("total").innerText = data.total;
+		    })
+		    .catch(err => {
+		        alert("Session expired. Please login again.");
+		        localStorage.removeItem("token");
+		        window.location.href = "/login";
+		    });
+		}
+
+		loadSummary();
+		function downloadPdf() {
+		    const token = localStorage.getItem("token");
+
+		    fetch("/api/pdf/download", {
+		        method: "GET",
+		        headers: {
+		            "Authorization": "Bearer " + token
+		        }
+		    })
+		    .then(response => {
+		        if (!response.ok) {
+		            throw new Error("PDF API failed");
+		        }
+		        return response.blob();
+		    })
+		    .then(blob => {
+		        const fileURL = window.URL.createObjectURL(blob);
+
+		        const a = document.createElement("a");
+		        a.href = fileURL;
+		        a.download = "products.pdf";
+		        document.body.appendChild(a);
+		        a.click();
+		        a.remove();
+
+		        window.URL.revokeObjectURL(fileURL);
+		    })
+		    .catch(err => {
+		        alert("PDF download failed. Please login again.");
+		        localStorage.removeItem("token");
+		        window.location.href = "/login";
+		    });
+		}
+		function sendEmail() {
+		    const token = localStorage.getItem("token");
+
+		    fetch("/api/email/send", {
+		        headers: {
+		            "Authorization": "Bearer " + token
+		        }
+		    })
+		    .then(res => res.text())
+		    .then(msg => alert(msg))
+		    .catch(err => alert("Email failed"));
+		}
+
+		</script>
+
+		<div th:replace="~{fragments/footer :: footer}"></div>
+		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+	</body>
+</html>
