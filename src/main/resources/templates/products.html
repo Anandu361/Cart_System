@@ -3,37 +3,40 @@
 <head>
     <title>Products</title>
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
 </head>
 <body>
-
+<h1 class="text-center m-2">Cart System <i class="bi bi-cart"></i></h1>
 <div th:replace="~{fragments/navbar :: navbar}"></div>
 
-<h2>Products List</h2>
+<div class="container">
+	<h2 class="m-2">Products List</h2>
 
-<div class="row mb-3">
-  <div class="col-md-4">
-    <select id="sortSelect" class="form-select" onchange="sortProducts()">
-      <option value="">Sort By</option>
-      <option value="name">Name</option>
-      <option value="price">Price</option>
-    </select>
-  </div>
-</div>
-<table class="table table-bordered table-striped table-hover">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Price</th>
-            <th>Quantity</th>
-        </tr>
-    </thead>
-    <tbody id="productTableBody"></tbody>
-</table>
-<div class="d-flex justify-content-center align-items-center gap-3 mt-3">
-  <button class="btn btn-outline-primary" onclick="prevPage()">Previous</button>
-  <span class="fw-bold">Page <span id="pageNumber">1</span></span>
-  <button class="btn btn-outline-primary" onclick="nextPage()">Next</button>
+	<div class="row mb-3">
+	  <div class="col-md-4">
+	    <select id="sortSelect" class="form-select" onchange="sortProducts()">
+	      <option value="">Sort By</option>
+	      <option value="name">Name</option>
+	      <option value="price">Price</option>
+	    </select>
+	  </div>
+	</div>
+	<table class="table table-bordered table-striped table-hover">
+	    <thead>
+	        <tr>
+	            <th>ID</th>
+	            <th>Name</th>
+	            <th>Price</th>
+	            <th>Quantity</th>
+	        </tr>
+	    </thead>
+	    <tbody id="productTableBody"></tbody>
+	</table>
+	<div class="d-flex justify-content-center align-items-center gap-3 mt-3">
+	  <button class="btn btn-outline-primary" onclick="prevPage()">Previous</button>
+	  <span class="fw-bold">Page <span id="pageNumber">1</span></span>
+	  <button class="btn btn-outline-primary" onclick="nextPage()">Next</button>
+	</div>
 </div>
 
 
