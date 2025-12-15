@@ -5,7 +5,7 @@ I can build more projects on my own.
 
 ## Tech Stack
 - Spring Boot
-- HTML
 - JavaScript
-- Bootstrap
 - MySQL
+- Bootstrap
+- HTML
